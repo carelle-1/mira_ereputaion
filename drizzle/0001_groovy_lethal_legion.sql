@@ -1,0 +1,1 @@
+ALTER TABLE `ghostroar_sessions` MODIFY COLUMN `token_hash` varchar(255) NOT NULL;

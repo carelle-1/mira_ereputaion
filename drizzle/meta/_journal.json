@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1791285048774,
+      "tag": "0000_bitter_human_fly",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1791285440838,
+      "tag": "0001_groovy_lethal_legion",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1791285764183,
+      "tag": "0002_acoustic_lady_mastermind",
+      "breakpoints": true
+    }
+  ]
+}

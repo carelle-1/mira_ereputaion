@@ -1,0 +1,1 @@
+ALTER TABLE `ghostroar_resources` MODIFY COLUMN `type` varchar(255) NOT NULL;
