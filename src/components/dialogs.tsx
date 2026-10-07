@@ -57,6 +57,7 @@ function PasswordForm() {
 function ContactComposer({ entity }: { entity?: Entity }) {
   const { save, notify, closeModal } = useWorkspace();
   const [busy,setBusy] = useState(false);
+  if (entity?.type === 'alerts') return <div className="support-dialog"><div className="support-big-icon"><Icon name="alert" size={42}/></div><h3>Signaler cette menace</h3><p>La source « {entity.name} » est prête à être signalée. Votre équipe peut transmettre le signalement à la plateforme concernée.</p>{entity.url && <a className="support-contact" href={entity.url} target="_blank" rel="noreferrer"><Icon name="external"/>Consulter la source<Icon name="arrow"/></a>}<Button variant="primary" icon="check" onClick={async()=>{const result=await save('alerts',{status:'in_progress',notes:`Signalement préparé le ${new Date().toLocaleDateString('fr-FR')}`},entity.id);if(result){closeModal();notify('Le signalement est enregistré. Transmettez-le à la plateforme source.');}}}>Enregistrer le signalement</Button></div>;
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); const form = new FormData(event.currentTarget);
     const subject = String(form.get('subject')), message = String(form.get('message')), email = String(form.get('email'));

@@ -8,7 +8,7 @@ import { parseEntityData } from '@/lib/entity-data';
 import { resourceTypes, type Entity, type ResourceType } from '@/lib/types';
 
 export type ResourceContext = { params: Promise<{ type: string; id?: string }> };
-const allowedFields = new Set(['name', 'description', 'status', 'platform', 'category', 'sentiment', 'score', 'count', 'growth', 'author', 'date', 'time', 'url', 'email', 'phone', 'role', 'company', 'country', 'city', 'languages', 'domain', 'severity', 'assignee', 'views', 'likes', 'comments', 'image', 'notes', 'progress', 'active', 'emailAlerts', 'pushAlerts', 'digest']);
+const allowedFields = new Set(['name', 'description', 'status', 'platform', 'category', 'sentiment', 'score', 'count', 'growth', 'author', 'date', 'time', 'url', 'email', 'phone', 'role', 'company', 'country', 'city', 'languages', 'domain', 'severity', 'assignee', 'views', 'likes', 'comments', 'image', 'notes', 'progress', 'active', 'emailAlerts', 'pushAlerts', 'digest', 'timezone']);
 export async function handleResource(request: Request, context: ResourceContext) {
   try {
     if (request.method !== 'GET' && !sameOrigin(request)) return NextResponse.json({ error: 'Origine non autorisée.' }, { status: 403 });

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, type ReactNode, type ButtonHTMLAttributes, type SelectHTMLAttributes } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type ButtonHTMLAttributes, type SelectHTMLAttributes } from 'react';
 import { createPortal } from 'react-dom';
 import * as L from 'lucide-react';
 
@@ -13,8 +13,10 @@ export function Icon({ name, size = 18, className = '', ...props }: { name: stri
 export function Logo({ compact = false, imageOnly = false }: { compact?: boolean; imageOnly?: boolean }) {
   return <div className={`brand ${compact ? 'compact' : ''}`}>{imageOnly ? <img src="/images/logo4.png" alt="" className="brand-lion" /> : <><img src="/images/logo4.png" alt="" className="brand-lion" /><div><strong>GHOSTROAR</strong><span>REPUTATION</span></div></>}</div>;
 }
-export function Avatar({ size = 'normal', className = '' }: { size?: string; className?: string }) {
-  return <span className={`avatar avatar-${size} ${className}`}><img src="/images/arnaud-kenne.jpg" alt="Arnaud Kenne" /></span>;
+export function Avatar({ size = 'normal', className = '', src, alt = 'Arnaud Kenne' }: { size?: string; className?: string; src?: string; alt?: string }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const imageSrc = !imageFailed ? src : undefined;
+  return <span className={`avatar avatar-${size} ${className} ${!imageSrc ? 'avatar-placeholder' : ''}`} aria-label={!imageSrc ? alt : undefined}>{imageSrc ? <img src={imageSrc} alt={alt} onError={() => setImageFailed(true)} /> : <Icon name="user" size={size === 'small' ? 18 : 26} />}</span>;
 }
 export function PlatformIcon({ platform = 'web', size = 'normal' }: { platform?: string; size?: string }) {
   let content: ReactNode;

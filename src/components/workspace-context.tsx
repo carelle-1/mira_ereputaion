@@ -57,7 +57,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     })();
   }, [isAuth, refresh, notify]);
   const closeModal = useCallback(() => setModal(null), []);
-  const navigate = useCallback((section: string) => { setModal(null); router.push(section === 'dashboard' ? '/' : `/${section}`); }, [router]);
+  const navigate = useCallback((section: string) => { setModal(null); router.push(section === 'dashboard' ? '/' : section === 'offres' ? '/offres' : `/${section}`); }, [router]);
   async function save(type: ResourceType, values: Partial<Entity>, id?: string): Promise<Entity | null> {
     await ready.current;
     const previous = data[type];
@@ -68,7 +68,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const response = await fetch(`/api/resources/${type}${id ? `/${id}` : ''}`, { method: id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) });
       const entity = await response.json();
       if (!response.ok) throw new Error(entity.error);
-      setData(current => ({ ...current, [type]: current[type].map(item => item.id === tempId ? entity : item) }));
+      setData(current => ({ ...current, [type]: current[type].map(item => item.id === tempId ? { ...item, ...entity } : item) }));
       return entity;
     } catch (error) {
       setData(current => ({ ...current, [type]: previous }));
