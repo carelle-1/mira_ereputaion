@@ -10,8 +10,8 @@ export function Icon({ name, size = 18, className = '', ...props }: { name: stri
   const Component = iconMap[name] || L.Circle;
   return <Component size={size} strokeWidth={1.7} className={`icon ${className}`} aria-hidden="true" {...props} />;
 }
-export function Logo({ compact = false }: { compact?: boolean }) {
-  return <div className={`brand ${compact ? 'compact' : ''}`}><img src="/images/lion-logo.png" alt="" className="brand-lion" /><div><strong>GHOSTROAR</strong><span>REPUTATION</span></div></div>;
+export function Logo({ compact = false, imageOnly = false }: { compact?: boolean; imageOnly?: boolean }) {
+  return <div className={`brand ${compact ? 'compact' : ''}`}>{imageOnly ? <img src="/images/logo4.png" alt="" className="brand-lion" /> : <><img src="/images/logo4.png" alt="" className="brand-lion" /><div><strong>GHOSTROAR</strong><span>REPUTATION</span></div></>}</div>;
 }
 export function Avatar({ size = 'normal', className = '' }: { size?: string; className?: string }) {
   return <span className={`avatar avatar-${size} ${className}`}><img src="/images/arnaud-kenne.jpg" alt="Arnaud Kenne" /></span>;
