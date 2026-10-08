@@ -1,5 +1,5 @@
 'use client';
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent } from 'react';
 import type { Entity, ResourceType } from '@/lib/types';
 import { platformNames } from '@/lib/demo-data';
 import { useWorkspace } from './workspace-context';
@@ -9,7 +9,7 @@ type Field = { key: string; label: string; type?: string; required?: boolean; op
 const platforms = Object.entries(platformNames);
 const statuses: [string, string][] = [['draft','Brouillon'],['scheduled','Programmé'],['published','Publié'],['archived','Archivé']];
 const fields: Record<ResourceType, Field[]> = {
-  sources: [{ key:'name',label:'Nom de la source',required:true },{ key:'platform',label:'Plateforme',options:platforms },{ key:'url',label:'Adresse URL',type:'url',required:true,full:true },{ key:'category',label:'Catégorie',options:[['social','Réseaux sociaux'],['media','Médias & News'],['search','Moteurs de recherche'],['web','Sites web'],['other','Autres']] },{ key:'status',label:'État de la connexion',options:[['connected','Connectée'],['partial','Partiellement connectée'],['inactive','Déconnectée']] },{ key:'description',label:'Description',type:'textarea',full:true }],
+  sources: [{ key:'name',label:'Nom de la source',required:true },{ key:'platform',label:'Plateforme',options:platforms },{ key:'url',label:'Adresse URL',type:'url',required:true,full:true },{ key:'category',label:'Catégorie',options:[['social','Réseaux sociaux'],['media','Médias & News'],['search','Moteurs de recherche'],['web','Sites web'],['other','Autres']] },{ key:'status',label:'État de la connexion',options:[['connected','Connectée'],['partial','Partiellement connectée'],['inactive','Déconnectée']] },{ key:'description',label:'Description',type:'textarea',full:true },{ key:'image',label:'Logo',type:'file' }],
   mentions: [{ key:'name',label:'Contenu de la mention',required:true,type:'textarea',full:true },{ key:'platform',label:'Source',options:platforms },{ key:'author',label:'Auteur / Canal',required:true },{ key:'sentiment',label:'Sentiment',options:[['positive','Positif'],['neutral','Neutre'],['negative','Négatif']] },{ key:'score',label:'Score (0 à 100)',type:'number' },{ key:'category',label:'Sujet' },{ key:'url',label:'Lien vers la mention',type:'url' }],
   alerts: [{ key:'name',label:'Titre de l’alerte',required:true,full:true },{ key:'description',label:'Description',type:'textarea',full:true },{ key:'severity',label:'Sévérité',options:[['critical','Critique'],['high','Élevée'],['medium','Moyenne'],['low','Basse'],['info','Information']] },{ key:'status',label:'Statut',options:[['unread','Non lue'],['in_progress','En cours'],['resolved','Résolue'],['archived','Archivée']] },{ key:'platform',label:'Source',options:platforms },{ key:'assignee',label:'Assignée à',options:[['','Non assignée'],['Arnaud Kenne','Arnaud Kenne'],['Camille Dubois','Camille Dubois'],['Julien Moreau','Julien Moreau'],['Sophie Leroy','Sophie Leroy']] }],
   publications: [{ key:'name',label:'Titre de la publication',required:true,full:true },{ key:'description',label:'Contenu',type:'textarea',required:true,full:true },{ key:'platform',label:'Plateforme',options:platforms },{ key:'status',label:'Statut',options:statuses },{ key:'date',label:'Date de publication',type:'datetime-local',full:true }],
@@ -21,27 +21,52 @@ const fields: Record<ResourceType, Field[]> = {
   appointments: [{ key:'name',label:'Objet du rendez-vous',required:true,full:true },{ key:'author',label:'Contact',required:true },{ key:'company',label:'Média / Organisation' },{ key:'date',label:'Date et heure',type:'datetime-local',required:true },{ key:'email',label:'Email du contact',type:'email' },{ key:'status',label:'Statut',options:[['scheduled','Planifié'],['resolved','Terminé'],['archived','Annulé']] },{ key:'description',label:'Notes préparatoires',type:'textarea',full:true }],
   campaigns: [{ key:'name',label:'Nom de la campagne',required:true,full:true },{ key:'description',label:'Objectifs et message clé',required:true,type:'textarea',full:true },{ key:'status',label:'Statut',options:[['draft','Brouillon'],['active','Active'],['resolved','Terminée'],['archived','Archivée']] },{ key:'date',label:'Date de lancement',type:'date' },{ key:'assignee',label:'Responsable',full:true }],
   settings: [{ key:'name',label:'Nom des préférences',required:true },{ key:'emailAlerts',label:'Alertes par email',type:'checkbox' },{ key:'pushAlerts',label:'Notifications dans l’application',type:'checkbox' },{ key:'digest',label:'Synthèse hebdomadaire',type:'checkbox' }],
+  integrations: [{ key:'name',label:'Nom de l’intégration',required:true },{ key:'platform',label:'Plateforme',options:platforms },{ key:'connected',label:'Connecté',type:'checkbox' }],
 };
-const resourceLabels: Record<ResourceType, string> = { sources:'une source',mentions:'une mention',alerts:'une alerte',publications:'un contenu',contacts:'un contact',reports:'un rapport',rules:'une règle',crises:'une crise',profile:'le profil',settings:'les préférences',appointments:'un rendez-vous',campaigns:'une campagne' };
-const defaults: Record<ResourceType, Partial<Entity>> = { sources:{platform:'web',category:'web',status:'connected',active:true,count:0,growth:0},mentions:{platform:'facebook',sentiment:'positive',score:75,category:'Innovation technologique',time:'À l’instant'},alerts:{platform:'web',severity:'medium',status:'unread',time:'À l’instant'},publications:{platform:'linkedin',status:'draft',views:'—',likes:0,comments:0,score:0,image:'speaker'},contacts:{category:'Presse',sentiment:'neutral',country:'France',platform:'person',score:50,status:'active'},reports:{category:'Réputation',status:'ready'},rules:{category:'sentiment',severity:'medium',active:true},crises:{status:'active',severity:'critical',progress:0},profile:{},settings:{},appointments:{status:'scheduled'},campaigns:{status:'draft',count:0} };
+const resourceLabels: Record<ResourceType, string> = { sources:'une source',mentions:'une mention',alerts:'une alerte',publications:'un contenu',contacts:'un contact',reports:'un rapport',rules:'une règle',crises:'une crise',profile:'le profil',settings:'les préférences',appointments:'un rendez-vous',campaigns:'une campagne',integrations:'une intégration' };
+const defaults: Record<ResourceType, Partial<Entity>> = { sources:{platform:'web',category:'web',status:'connected',active:true,count:0,growth:0},mentions:{platform:'facebook',sentiment:'positive',score:75,category:'Innovation technologique',time:'À l’instant'},alerts:{platform:'web',severity:'medium',status:'unread',time:'À l’instant'},publications:{platform:'linkedin',status:'draft',views:'—',likes:0,comments:0,score:0,image:'speaker'},contacts:{category:'Presse',sentiment:'neutral',country:'France',platform:'person',score:50,status:'active'},reports:{category:'Réputation',status:'ready'},rules:{category:'sentiment',severity:'medium',active:true},crises:{status:'active',severity:'critical',progress:0},profile:{},  settings:{},appointments:{status:'scheduled'},campaigns:{status:'draft',count:0},integrations:{connected:false} };
 function Editor({ type, entity, preset }: { type: ResourceType; entity?: Entity; preset?: Partial<Entity> }) {
   const { save, closeModal, notify, openModal } = useWorkspace();
   const [form, setForm] = useState<Partial<Entity>>({ ...defaults[type], ...entity, ...preset });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const update = (key: string, value: string | number | boolean) => setForm(previous => ({ ...previous, [key]: value }));
+  async function uploadLogo(sourceId: string, file: File) {
+    const formData = new FormData();
+    formData.append('logo', file);
+    formData.append('sourceId', sourceId);
+    const response = await fetch('/api/sources/logo', { method: 'POST', body: formData });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error);
+    return result.image as string;
+  }
   async function submit(event: FormEvent) {
     event.preventDefault(); setError('');
     if (type === 'publications' && form.status === 'scheduled' && !form.date) { setError('Choisissez une date pour programmer cette publication.'); return; }
     setBusy(true);
-    const values = { ...form };
+    const values = { ...form, ...(entity?.image ? { image: entity.image } : {}) };
     if (type === 'sources') values.active = values.status !== 'inactive';
     const result = await save(type, values, entity?.id);
+    if (result && logoFile) {
+      try { await uploadLogo(result.id, logoFile); }
+      catch { notify('La source a été créée, mais le logo n\'a pas pu être enregistré.', true); }
+    }
     setBusy(false);
     if (result) { closeModal(); notify(entity ? 'Les modifications ont été enregistrées.' : 'Le nouvel élément a été créé.'); }
     else setError('Vérifiez les informations puis réessayez.');
   }
-  return <form onSubmit={submit}><p className="form-intro">{entity ? 'Mettez à jour les informations ci-dessous.' : 'Renseignez les informations pour ajouter cet élément à votre espace.'}</p><div className="form-grid">{fields[type].map(field => <label className={`form-field ${field.full ? 'full' : ''} ${field.type === 'checkbox' ? 'checkbox-field' : ''}`} key={field.key}><span>{field.label}{field.required && <em> *</em>}</span>{field.type === 'checkbox' ? <Toggle label={field.label} checked={Boolean(form[field.key])} onChange={() => update(field.key, !form[field.key])} /> : field.options ? <Select value={String(form[field.key] ?? field.options[0][0])} onChange={e => update(field.key, e.target.value)}>{field.options.map(([value,label]) => <option value={value} key={value}>{label}</option>)}</Select> : field.type === 'textarea' ? <textarea rows={type === 'profile' || type === 'reports' ? 6 : 4} required={field.required} value={String(form[field.key] ?? '')} onChange={e => update(field.key, e.target.value)} placeholder={field.label} minLength={field.required ? 2 : undefined} /> : <input type={field.type || 'text'} value={String(form[field.key] ?? '').slice(0, field.type === 'datetime-local' ? 16 : field.type === 'date' ? 10 : undefined)} onChange={e => update(field.key, field.type === 'number' ? Number(e.target.value) : e.target.value)} required={field.required} minLength={field.required && !field.type ? 2 : undefined} min={field.type === 'number' ? 0 : undefined} max={field.key === 'score' || field.key === 'progress' ? 100 : undefined} placeholder={field.type === 'url' ? 'https://' : field.label} />}</label>)}</div>{error && <div className="form-error"><Icon name="alert" />{error}</div>}<div className="modal-footer">{entity && type !== 'profile' && type !== 'settings' && <Button variant="danger-ghost" icon="delete" type="button" onClick={() => openModal({ kind: 'delete', entity })}>Supprimer</Button>}<span className="spacer" /><Button type="button" onClick={closeModal}>Annuler</Button><Button type="submit" variant="primary" icon="check" busy={busy}>{entity ? 'Enregistrer' : 'Créer'}</Button></div></form>;
+  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) { notify('Choisissez une image JPG, PNG ou WebP de moins de 2 Mo.', true); return; }
+    setLogoFile(file);
+    if (entity?.id) {
+      uploadLogo(entity.id, file).then(image => { setForm(prev => ({ ...prev, image })); }).catch(() => notify('Échec de l\'upload du logo.', true));
+    }
+  }
+  return <form onSubmit={submit}><p className="form-intro">{entity ? 'Mettez à jour les informations ci-dessous.' : 'Renseignez les informations pour ajouter cet élément à votre espace.'}</p><div className="form-grid">{fields[type].map(field => <label className={`form-field ${field.full ? 'full' : ''} ${field.type === 'checkbox' ? 'checkbox-field' : ''} ${field.type === 'file' ? 'file-field' : ''}`} key={field.key}><span>{field.label}{field.required && <em> *</em>}</span>{field.type === 'checkbox' ? <Toggle label={field.label} checked={Boolean(form[field.key])} onChange={() => update(field.key, !form[field.key])} /> : field.options ? <Select value={String(form[field.key] ?? field.options[0][0])} onChange={e => update(field.key, e.target.value)}>{field.options.map(([value,label]) => <option value={value} key={value}>{label}</option>)}</Select> : field.type === 'textarea' ? <textarea rows={type === 'profile' || type === 'reports' ? 6 : 4} required={field.required} value={String(form[field.key] ?? '')} onChange={e => update(field.key, e.target.value)} placeholder={field.label} minLength={field.required ? 2 : undefined} /> : field.type === 'file' ? <div className="file-upload"><input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden-input" onChange={handleLogoChange} /><Button variant="outline" icon="upload" type="button" onClick={() => logoInputRef.current?.click()}>{form.image ? 'Changer le logo' : 'Choisir un logo'}</Button>{form.image && <img src={form.image as string} alt="Aperçu du logo" className="logo-preview" />}</div> : <input type={field.type || 'text'} value={String(form[field.key] ?? '').slice(0, field.type === 'datetime-local' ? 16 : field.type === 'date' ? 10 : undefined)} onChange={e => update(field.key, field.type === 'number' ? Number(e.target.value) : e.target.value)} required={field.required} minLength={field.required && !field.type ? 2 : undefined} min={field.type === 'number' ? 0 : undefined} max={field.key === 'score' || field.key === 'progress' ? 100 : undefined} placeholder={field.type === 'url' ? 'https://' : field.label} />}</label>)}</div>{error && <div className="form-error"><Icon name="alert" />{error}</div>}<div className="modal-footer">{entity && type !== 'profile' && type !== 'settings' && <Button variant="danger-ghost" icon="delete" type="button" onClick={() => openModal({ kind: 'delete', entity })}>Supprimer</Button>}<span className="spacer" /><Button type="button" onClick={closeModal}>Annuler</Button><Button variant="primary" icon="save" busy={busy} type="submit">{entity ? 'Enregistrer' : 'Créer'}</Button></div></form>;
 }
 function PasswordForm() {
   const { closeModal, notify } = useWorkspace();

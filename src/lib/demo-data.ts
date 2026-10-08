@@ -94,5 +94,11 @@ export const demoData: WorkspaceData = {
     item('campaigns', 3, { name: 'Former les talents de demain', description: 'Valoriser les formations et les témoignages de jeunes talents.', status: 'active', date: '2026-09-10', assignee: 'Julien Moreau', count: 6 }),
   ],
   settings: [item('settings', 1, { name: 'Préférences du compte', emailAlerts: true, pushAlerts: true, digest: false, languages: 'Français', status: 'active' })],
+  integrations: [
+    { name: 'LinkedIn', platform: 'linkedin', connected: true },
+    { name: 'X (Twitter)', platform: 'x', connected: true },
+    { name: 'Instagram', platform: 'instagram', connected: false },
+    { name: 'YouTube', platform: 'youtube', connected: true },
+  ].map((d, i) => item('integrations', i + 1, d)),
 };
 export const platformNames: Record<string, string> = { facebook: 'Facebook', instagram: 'Instagram', x: 'X (Twitter)', youtube: 'YouTube', linkedin: 'LinkedIn', tiktok: 'TikTok', presse: 'Média', web: 'Blog Web', google: 'Google News', forum: 'Forums', whatsapp: 'WhatsApp', other: 'Analyse IA' };

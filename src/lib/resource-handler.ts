@@ -8,7 +8,7 @@ import { parseEntityData } from '@/lib/entity-data';
 import { resourceTypes, type Entity, type ResourceType } from '@/lib/types';
 
 export type ResourceContext = { params: Promise<{ type: string; id?: string }> };
-const allowedFields = new Set(['name', 'description', 'status', 'platform', 'category', 'sentiment', 'score', 'count', 'growth', 'author', 'date', 'time', 'url', 'email', 'phone', 'role', 'company', 'country', 'city', 'languages', 'domain', 'severity', 'assignee', 'views', 'likes', 'comments', 'image', 'notes', 'progress', 'active', 'emailAlerts', 'pushAlerts', 'digest', 'timezone']);
+const allowedFields = new Set(['name', 'description', 'status', 'platform', 'category', 'sentiment', 'score', 'count', 'growth', 'author', 'date', 'time', 'url', 'email', 'phone', 'role', 'company', 'country', 'city', 'languages', 'domain', 'severity', 'assignee', 'views', 'likes', 'comments', 'image', 'notes', 'progress', 'active', 'connected', 'emailAlerts', 'pushAlerts', 'digest', 'timezone']);
 export async function handleResource(request: Request, context: ResourceContext) {
   try {
     if (request.method !== 'GET' && !sameOrigin(request)) return NextResponse.json({ error: 'Origine non autorisée.' }, { status: 403 });
@@ -32,7 +32,7 @@ export async function handleResource(request: Request, context: ResourceContext)
     const data: Partial<Entity> = {};
     for (const [key, value] of Object.entries(body)) {
       if (!allowedFields.has(key)) continue;
-      if (typeof value === 'string') data[key] = value.trim().slice(0, key === 'description' || key === 'notes' ? 20000 : 1000);
+      if (typeof value === 'string') data[key] = key === 'image' ? value.trim() : value.trim().slice(0, key === 'description' || key === 'notes' ? 20000 : 1000);
       else if (typeof value === 'boolean') data[key] = value;
       else if (typeof value === 'number' && Number.isFinite(value)) data[key] = value;
     }

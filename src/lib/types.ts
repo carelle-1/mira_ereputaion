@@ -1,4 +1,4 @@
-export const resourceTypes = ['sources', 'mentions', 'alerts', 'publications', 'contacts', 'reports', 'rules', 'crises', 'profile', 'settings', 'appointments', 'campaigns'] as const;
+export const resourceTypes = ['sources', 'mentions', 'alerts', 'publications', 'contacts', 'reports', 'rules', 'crises', 'profile', 'settings', 'appointments', 'campaigns', 'integrations'] as const;
 export type ResourceType = typeof resourceTypes[number];
 export interface Entity {
   id: string;
